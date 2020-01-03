@@ -8,6 +8,15 @@ let Particle = function () {
         rays.push(Ray(pos, radians(a)))
     }
 
+    function colides(wall) {
+        // for (const wall of walls) {
+
+        // let d = dist(wall.a.x, wall.a.y, wall.b.x, wall.b.y)
+
+    
+        // }
+
+    }
     function updateFOV(FOV) {
         fov = FOV
         rays = []
@@ -17,11 +26,17 @@ let Particle = function () {
 
     }
 
-    function move(amt) {
+    function moveFrontal(amt) {
         const vel = p5.Vector.fromAngle(heading)
         vel.setMag(amt)
         pos.add(vel)
     }
+    function moveLateral(amt) {
+        const vel = p5.Vector.fromAngle(heading - 90)
+        vel.setMag(amt)
+        pos.add(vel)
+    }
+
     function rotate(angle) {
         heading += angle
         let index = 0
@@ -43,15 +58,20 @@ let Particle = function () {
         for (const ray of rays) {
             let closest = null
             let record = Infinity
-            
+
+            let obj = {
+                colors: null
+            }
             for (const wall of walls) {
                 const pt = ray.cast(wall)
                 if (pt) {
                     let d = p5.Vector.dist(pos, pt)
+
                     const a = ray.dir.heading() - heading
                     d *= cos(a)
                     if (d < record) {
                         record = d
+                        obj.colors = wall.colors
                         closest = pt
                     }
                 }
@@ -59,10 +79,13 @@ let Particle = function () {
             if (closest) {
                 line(pos.x, pos.y, closest.x, closest.y)
             }
-            scene.push(record)
+            obj.record = record
+            scene.push(obj)
+
         }
+
         return scene
     }
-    return { pos, rays, show, look, rotate, move, updateFOV }
+    return { pos, rays, show, look, rotate, moveFrontal, moveLateral, colides, updateFOV }
 
 }

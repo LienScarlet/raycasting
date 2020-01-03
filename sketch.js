@@ -7,13 +7,15 @@ let sliderFOV
 
 function setup() {
     createCanvas(800, 400)
+
     for (let i = 0; i < 5; i++) {
-        const x1 = random(sceneW)
-        const y1 = random(sceneH)
-        const x2 = random(sceneW)
-        const y2 = random(sceneH)
+        const x1 = floor(random(sceneW))
+        const y1 = floor(random(sceneH))
+        const x2 = floor(random(sceneW))
+        const y2 = floor(random(sceneH))
         walls.push(Boundary(x1, y1, x2, y2))
     }
+    walls.push(Boundary(10, 200, 100, 250))
     walls.push(Boundary(0, 0, sceneW, 0))
     walls.push(Boundary(sceneH, 0, sceneW, sceneH))
     walls.push(Boundary(0, 0, 0, sceneH))
@@ -29,25 +31,31 @@ function changeFOV() {
     particle.updateFOV(FOV)
 }
 
-function draw() {
 
-    if (keyIsDown(65)) {
+function draw() {
+    if (movedX > 0) {
+        particle.rotate(0.05)
+    } else if (movedX < 0) {
         particle.rotate(-0.05)
     }
+    if (keyIsDown(65)) {
+        particle.moveLateral(1)
+    }
     if (keyIsDown(68)) {
-        particle.rotate(0.05)
+        particle.moveLateral(-1)
     }
     if (keyIsDown(87)) {
-        particle.move(1)
+        particle.moveFrontal(1)
     }
     if (keyIsDown(83)) {
-        particle.move(-1)
+        particle.moveFrontal(-1)
     }
 
     background(51)
     for (const wall of walls) {
         wall.show()
     }
+    setTimeout(particle.colides(walls[5]), 1000)
 
     particle.show()
     const scene = particle.look(walls)
@@ -57,14 +65,19 @@ function draw() {
     noStroke()
     rectMode(CENTER)
     translate(sceneW, 0)
+
     for (let i = 0; i < scene.length; i++) {
-        const sq = scene[i] * scene[i]
+        const sq = scene[i].record * scene[i].record
         const wSq = sceneW * sceneW
         const b = map(sq, 0, wSq, 255, 0)
-        const h = map(scene[i], 0, sceneW, sceneH, 0)
-        fill(100, 200, 50, b)
-        rect(i * w + w / 2, sceneH / 2, w + 1, h)
+        const h = map(scene[i].record, 0, sceneW, sceneH, 0)
+        fill(scene[i].colors.r, scene[i].colors.g, scene[i].colors.b, b)
+        rect(i * w + w / 2, sceneH / 2, w + 1, 100 * h / scene[i].record)
+
     }
     pop()
 }
 
+function mousePressed() {
+    if (mouseButton === RIGHT) requestPointerLock()
+}
